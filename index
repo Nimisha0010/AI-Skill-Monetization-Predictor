@@ -1,0 +1,54 @@
+// frontend/src/pages/index.jsx
+import { useState } from "react";
+import SkillInput from "../components/SkillInput";
+import PredictionCard from "../components/PredictionCard";
+import DemandMeter from "../components/DemandMeter";
+import GrowthChart from "../components/GrowthChart";
+import { predictSkill } from "../services/api";
+
+export default function Home() {
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handlePredict = async (formData) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await predictSkill(formData);
+      setResult(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <main className="min-h-screen bg-gradient-to-br from-indigo-50 to-white px-4 py-10">
+      <div className="max-w-3xl mx-auto space-y-6">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-indigo-700">AI Skill Monetization Predictor</h1>
+          <p className="text-gray-500 mt-2">Discover the earning potential of any skill with AI-powered insights.</p>
+        </div>
+
+        <SkillInput onSubmit={handlePredict} loading={loading} />
+
+        {error && (
+          <div className="bg-red-50 border border-red-300 text-red-700 rounded-xl px-4 py-3 text-sm">
+            {error}
+          </div>
+        )}
+
+        {result && (
+          <>
+            <PredictionCard data={result} />
+            <DemandMeter demand={result.demand_score} competition={result.competition_score} />
+            <GrowthChart growthRate={result.growth_prediction} />
+          </>
+        )}
+      </div>
+    </main>
+  );
+}
+ v  
