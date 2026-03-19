@@ -1,0 +1,36 @@
+# backend/routes/predict.py
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from pydantic import BaseModel
+from database.db_connection import get_db
+from services.prediction_service import run_prediction
+
+router = APIRouter()
+
+class PredictRequest(BaseModel):
+    skill: str
+    experience: float
+    location: str
+    hours_per_week: float
+
+class PredictResponse(BaseModel):
+    salary_prediction: float
+    freelance_income: float
+    demand_score: float
+    competition_score: float
+    growth_prediction: float
+    monetization_score: float
+
+@router.post("/", response_model=PredictResponse)
+def predict(request: PredictRequest, db: Session = Depends(get_db)):
+    try:
+        result = run_prediction(
+            skill=request.skill,
+            experience=request.experience,
+            location=request.location,
+            hours_per_week=request.hours_per_week,
+            db=db
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
