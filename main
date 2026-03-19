@@ -1,0 +1,25 @@
+# backend/main.py
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from routes import predict, compare, recommendations
+from database.db_connection import engine, Base
+
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="AI Skill Monetization Predictor API", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(predict.router, prefix="/predict", tags=["Prediction"])
+app.include_router(compare.router, prefix="/compare", tags=["Compare"])
+app.include_router(recommendations.router, prefix="/recommendations", tags=["Recommendations"])
+
+@app.get("/")
+def root():
+    return {"message": "AI Skill Monetization Predictor API is running."}
